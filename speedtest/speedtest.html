@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Download Speed Test</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .form {
+        margin-top: 50px;
+      }
+      .result-container {
+        margin-top: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .download-speed, .download-time {
+        display: flex;
+        margin-bottom: 10px;
+      }
+      .label {
+        font-weight: bold;
+      }
+      .value {
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Download Speed Test</h1>
+      <form>
+        <label for="url-input">Enter URL:</label>
+        <input type="text" id="url-input" value="https://example.com/file.zip">
+        <button type="submit">Test Speed</button>
+      </form>
+      <div class="result-container">
+        <div class="download-speed">
+          <span class="label">Download Speed:</span>
+          <span class="value">0 Mbps</span>
+        </div>
+        <div class="download-time">
+          <span class="label">Download Time:</span>
+          <span class="value">0 seconds</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      // 定義測試下載速度的函數
+      function testDownloadSpeed(url) {
+        return new Promise((resolve, reject) => {
+          const startTime = Date.now();
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url);
+          xhr.responseType = 'blob';
+          xhr.onprogress = function(event) {
+            if (event.lengthComputable) {
+              const elapsedTime = (Date.now() - startTime) / 1000;
+              const loadedBytes = event.loaded;
+              const downloadSpeed = loadedBytes / elapsedTime / 1024 / 1024 * 8;
+              resolve({
+                speed: downloadSpeed.toFixed(2),
+                time: elapsedTime.toFixed(2)
+              });
+            }
+          };
+          xhr.onerror = function() {
+            reject();
+          };
+          xhr.send();
+        });
+      }
+      
+      // 監聽表單提交事件
+      const form = document.querySelector('form');
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const url = document.getElementById('url-input').value;
+        testDownloadSpeed(url).then(result => {
+          const downloadSpeedElement = document.querySelector('.download-speed .value');
+          const downloadTimeElement = document.querySelector('.download-time .value');
+          downloadSpeedElement.textContent = result.speed + ' Mbps';
+          downloadTimeElement.textContent = result.time + ' seconds';
+        }).catch(() => {
+          alert('Download failed. Please check the URL and try again.');
+        });
+      });
+    </script>
+  </body>
+</html>
